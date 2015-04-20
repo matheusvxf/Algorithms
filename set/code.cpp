@@ -112,7 +112,7 @@ bool Tree<T>::Iterator::operator!=(const Iterator& it) const
 template <class T>
 const typename Tree<T>::Iterator& Tree<T>::Iterator::operator++()
 {
-    state_ = kright;
+    state_ = (node_->right_ != nullptr ? kright : kparent);
 
     if (node_ == nullptr)
         return (*this);
@@ -123,45 +123,18 @@ const typename Tree<T>::Iterator& Tree<T>::Iterator::operator++()
 template <class T>
 const typename Tree<T>::Iterator& Tree<T>::Iterator::next()
 {
-    if (state_ == kleft)
-    {
-        if (node_->left_ != nullptr)
-        {
-            node_ = node_->left_;
-            return next();
-        }
-        else
-        {
-            return (*this);
-        }
-    }
-    else if (state_ == kself)
+    if (state_ == kself)
     {
         return (*this);
     }
     else if (state_ == kright)
     {
-        if (node_->right_ != nullptr)
-        {
-            node_ = node_->right_;
-            state_ = kleft;
-            return next();
-        }
-        else
-        {
-            if (node_->parent_ == nullptr)
-            {
-                node_ = nullptr;
-                return (*this);
-            }
-            else
-            {
-                state_ = (node_ == node_->parent_->left_ ? kself : kparent);
-                node_ = node_->parent_;
+        node_ = node_->right_;
+            
+        while (node_->left_ != nullptr)
+            node_ = node_->left_;
 
-                return next();
-            }
-        }
+        return (*this);
     }
     else // state_ == kparent
     {
