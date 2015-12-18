@@ -16,18 +16,42 @@
 
 using namespace std;
 
-#define INF (long long int)1e15
+#define INF (1 << 30)
 #define all(Q) Q.begin(), Q.end()
 
-int Solve(vector< int >& Q, int n, int i, int t, int a)
+int Solve(vector< int >& Q, int n)
 {
-    if (t == 0 || t > n - 1 - i)
-        return INF;
-    if (t == n - 1 - i)
-        return Solve(Q, n, i + 1, t, a + Q[i]);
-    if (i == n - 1)
-        return a + Q[i];
-    return min(max(Solve(Q, n, i + 1, t - 1, 0), a + Q[i]), Solve(Q, n, i + 1, t, a + Q[i]));
+    int s[100][100] = { 0 };
+    int m[100][11] = { 0 };
+    int N = Q.size();
+    int T = n + 1;
+
+    for (int i = 0; i < N; ++i)
+    {
+        s[i][i] = Q[i];
+        for (int j = i + 1; j < N; ++j)
+            s[i][j] = s[i][j-1] + Q[j];
+    }
+
+    for (int i = 0; i < N; ++i)
+        m[i][0] = INF;
+    for (int i = 1; i < T; ++i)
+        m[N - 1][i] = Q[N - 1];
+
+    for (int i = N - 2; i >= 0; i--)
+    {
+        for (int t = 1; t < T; ++t)
+        {
+            int minimum = INF;
+            for (int j = i; j < N; ++j)
+            {
+                minimum = min(minimum, max(s[i][j], m[j + 1][t - 1]));
+            }
+            m[i][t] = minimum;
+        }
+    }
+
+    return m[0][n];
 }
 
 int main(){
@@ -47,8 +71,8 @@ int main(){
             Q.push_back(num);
         }
 
-        int maximum = Solve(Q, Q.size(), 0, trucks, 0);
+        int maximum = Solve(Q, trucks);
 
-        printf("%d $%d\n", maximum, maximum * freight);
+        printf("%d $%d\n", maximum, maximum * freight * trucks);
     }
 }
